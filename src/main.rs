@@ -1,6 +1,7 @@
 use csv::Writer;
 use kml::types::Geometry::Point;
 use kml::{Kml, KmlReader};
+use regex::Regex;
 use serde::Serialize;
 use std::error::Error;
 use std::path::Path;
@@ -61,7 +62,7 @@ fn parse_fancy_free_walks_map(element: Kml) -> Vec<Walk> {
         Kml::Placemark(placemark) => {
             let name: String;
             let mut description: Option<String> = Option::from(String::from(""));
-            let mut length: Option<f64> = Option::from(0.0);
+            let mut length: f64 = 0.0;
             let mut latitude: Option<f64> = Option::from(0.0);
             let mut longitude: Option<f64> = Option::from(0.0);
 
@@ -74,11 +75,24 @@ fn parse_fancy_free_walks_map(element: Kml) -> Vec<Walk> {
                 Some(walk_description) => {
                     description = Some(walk_description);
 
-                    // TODO decode walk length from description
-                    //  - regex groups /\d+[¼½¾]*/gm to get miles
-                    //  - convert the unicode fractional to number
-                    //  - find the highest number matched
-                    length = Some(0.0);
+                    /* Decode walk length from description
+                     * - convert unicode fractionals to number
+                     * - find the highest number matched
+                     */
+                    let re = Regex::new(r"(\d+[¼½¾]*)").unwrap();
+                    let mut len: String;
+                    for group in re.captures_iter(description.clone().unwrap().as_str()) {
+                        len = String::from(&group[0])
+                            .replace("¼", ".25")
+                            .replace("½", ".50")
+                            .replace("¾", ".75");
+                        let tmp = len.parse::<f64>().unwrap();
+
+                        /* keep the largest length */
+                        if tmp > length {
+                            length = tmp;
+                        }
+                    }
                 }
                 _ => {}
             }
@@ -100,7 +114,7 @@ fn parse_fancy_free_walks_map(element: Kml) -> Vec<Walk> {
             let walk = Walk::new(
                 name,
                 description.unwrap(),
-                length.unwrap(),
+                length,
                 latitude.unwrap(),
                 longitude.unwrap(),
             );
