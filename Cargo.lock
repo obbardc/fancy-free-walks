@@ -114,6 +114,7 @@ name = "fancyfreewalks"
 version = "0.1.0"
 dependencies = [
  "csv",
+ "geoutils",
  "kml",
  "regex",
  "serde",
@@ -139,6 +140,12 @@ checksum = "f53acb0efebf761179d5346ab1dc2b3657535d461bde5eaf4465ff7fee7a9a15"
 dependencies = [
  "num-traits",
 ]
+
+[[package]]
+name = "geoutils"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e006f616a407d396ace1d2ebb3f43ed73189db8b098079bd129928d7645dd1e"
 
 [[package]]
 name = "itoa"

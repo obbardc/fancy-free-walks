@@ -1,4 +1,5 @@
 use csv::Writer;
+use geoutils::Location;
 use kml::types::Geometry::Point;
 use kml::{Kml, KmlReader};
 use regex::Regex;
@@ -17,16 +18,25 @@ struct Walk {
     length: f64,
     latitude: f64,
     longitude: f64,
+    distance: f64,
 }
 
 impl Walk {
-    fn new(name: String, description: String, length: f64, latitude: f64, longitude: f64) -> Walk {
+    fn new(
+        name: String,
+        description: String,
+        length: f64,
+        latitude: f64,
+        longitude: f64,
+        distance: f64,
+    ) -> Walk {
         Walk {
             name,
             description,
             length,
             latitude,
             longitude,
+            distance,
         }
     }
 }
@@ -63,8 +73,9 @@ fn parse_fancy_free_walks_map(element: Kml) -> Vec<Walk> {
             let name: String;
             let mut description: Option<String> = Option::from(String::from(""));
             let mut length: f64 = 0.0;
-            let mut latitude: Option<f64> = Option::from(0.0);
-            let mut longitude: Option<f64> = Option::from(0.0);
+            let mut latitude: f64 = 0.0;
+            let mut longitude: f64 = 0.0;
+            let mut distance_miles: f64 = 0.0;
 
             // TODO pub_walk: check if includes the word pub (ignorecase)
             // TODO regex /www\.fancyfreewalks\.org.*$/gm to get the URL
@@ -100,10 +111,14 @@ fn parse_fancy_free_walks_map(element: Kml) -> Vec<Walk> {
             match placemark.geometry {
                 Some(geometry) => match geometry {
                     Point(point) => {
-                        latitude = Some(point.coord.y);
-                        longitude = Some(point.coord.x);
+                        latitude = point.coord.y;
+                        longitude = point.coord.x;
 
-                        // TODO calculate distance out how far away home is from each walk in miles
+                        /* calculate distance from home to the start of the walk in miles */
+                        let home = Location::new(HOME_LATITUDE, HOME_LONGITUDE);
+                        let walk_start = Location::new(latitude, longitude);
+                        let distance = home.distance_to(&walk_start).unwrap();
+                        distance_miles = (distance.meters() * 0.006213712).round() / 10.0;
                     }
                     _ => {}
                 },
@@ -115,8 +130,9 @@ fn parse_fancy_free_walks_map(element: Kml) -> Vec<Walk> {
                 name,
                 description.unwrap(),
                 length,
-                latitude.unwrap(),
-                longitude.unwrap(),
+                latitude,
+                longitude,
+                distance_miles,
             );
             walks.push(walk);
         }
