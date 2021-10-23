@@ -11,7 +11,7 @@ use std::path::Path;
 const HOME_LATITUDE: f64 = 51.097848;
 const HOME_LONGITUDE: f64 = -0.243409;
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, PartialEq, PartialOrd)]
 struct Walk {
     name: String,
     description: String,
@@ -150,10 +150,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let kmz_data = kmz_reader.read().unwrap();
 
     // parse the walks from the kmz file
-    let walks = parse_fancy_free_walks_map(kmz_data);
+    let mut walks = parse_fancy_free_walks_map(kmz_data);
 
+    // sort walks by distance
+    walks.sort_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap());
+
+    // print walks
     println!("{:#?}", walks);
-    // TODO sort first by distance, then length
 
     // export to csv
     let mut csv = Writer::from_path("out.csv")?;
