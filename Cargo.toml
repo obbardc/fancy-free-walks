@@ -1,0 +1,12 @@
+[package]
+name = "fancyfreewalks"
+version = "0.1.0"
+authors = ["Christopher Obbard <chris@64studio.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+csv = "1.1"
+kml = "0.3"
+serde = { version = "1.0", features = ["derive"] }
