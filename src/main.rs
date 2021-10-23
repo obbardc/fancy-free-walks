@@ -80,11 +80,11 @@ fn parse_fancy_free_walks_map(element: Kml) -> Vec<Walk> {
             // TODO pub_walk: check if includes the word pub (ignorecase)
             // TODO regex /www\.fancyfreewalks\.org.*$/gm to get the URL
             // TODO replace "\'"
-            name = placemark.name.unwrap();
+            name = placemark.name.unwrap().replace(",", " ").replace(";", " ");
 
             match placemark.description {
                 Some(walk_description) => {
-                    description = Some(walk_description);
+                    description = Some(walk_description.replace(",", " ").replace(";", " "));
 
                     /* Decode walk length from description
                      * - convert unicode fractionals to number
