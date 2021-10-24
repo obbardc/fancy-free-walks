@@ -1,4 +1,4 @@
-use csv::Writer;
+use csv::{QuoteStyle, WriterBuilder};
 use geoutils::Location;
 use kml::types::Geometry::Point;
 use kml::{Kml, KmlReader};
@@ -80,11 +80,11 @@ fn parse_fancy_free_walks_map(element: Kml) -> Vec<Walk> {
             // TODO pub_walk: check if includes the word pub (ignorecase)
             // TODO regex /www\.fancyfreewalks\.org.*$/gm to get the URL
             // TODO replace "\'"
-            name = placemark.name.unwrap().replace(",", " ").replace(";", " ");
+            name = placemark.name.unwrap();
 
             match placemark.description {
                 Some(walk_description) => {
-                    description = Some(walk_description.replace(",", " ").replace(";", " "));
+                    description = Some(walk_description);
 
                     /* Decode walk length from description
                      * - convert unicode fractionals to number
@@ -159,7 +159,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("{:#?}", walks);
 
     // export to csv
-    let mut csv = Writer::from_path("out.csv")?;
+    let mut csv = WriterBuilder::new()
+        .quote_style(QuoteStyle::Always)
+        .from_path("out.csv")?;
     for walk in &walks {
         csv.serialize(walk)?;
     }
